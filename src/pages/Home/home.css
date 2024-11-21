@@ -46,6 +46,7 @@
     height: 50px;
     resize: none;
     border-radius: 4px;
+    padding: 8px;
 }
 
 .link-button{

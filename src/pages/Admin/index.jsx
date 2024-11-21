@@ -1,17 +1,41 @@
-import React, { useState } from "react";
-import { auth } from "../../Firebaseconnection";
+import React, { useState, useEffect } from "react";
+import { auth, db } from "../../Firebaseconnection";
 import { signOut } from "firebase/auth";
+import { addDoc, collection } from "firebase/firestore";
 import "./admin.css";
 const index = () => {
   const [tarefaInput, setTarefaInput] = useState("");
-
-  function handleRegister(e) {
+  const [user, setUser] = useState({});
+  useEffect(() => {
+    async function loadTarefas() {
+      const userDetail = localStorage.getItem("@local");
+      setUser(JSON.parse(userDetail));
+    }
+    loadTarefas()
+  },[]);
+  async function handleRegister(e) {
     e.preventDefault();
-    alert("clicou!");
+    if (tarefaInput === "") {
+      alert("Digite a sua tarefa");
+      return;
+    }
+    await addDoc(collection(db, "tarefas"), {
+      tarefa: tarefaInput,
+      created: new Date(),
+      userUid: user?.uid
+      
+    })
+      .then(() => {
+        console.log("TAREFA REGISTRADA");
+      })
+
+      .catch((error) => {
+        console.log("ALGO DEU ERRADO" + error);
+      });
   }
 
-async function logout(){
-await signOut(auth)
+  async function logout() {
+    await signOut(auth);
   }
   return (
     <div className="admin-container">
@@ -23,7 +47,9 @@ await signOut(auth)
           value={tarefaInput}
           onChange={(e) => setTarefaInput(e.target.value)}
         />
-        <button className="btn-register" type="submit">Registrar</button>
+        <button className="btn-register" type="submit">
+          Registrar
+        </button>
       </form>
 
       <article className="list">
@@ -33,7 +59,9 @@ await signOut(auth)
           <button className="btn-concluir">Finalizar</button>
         </div>
       </article>
-      <button className="btn-sair" onClick={logout}>Sair</button>
+      <button className="btn-sair" onClick={logout}>
+        Sair
+      </button>
     </div>
   );
 };
